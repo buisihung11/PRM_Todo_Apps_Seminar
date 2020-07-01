@@ -1,3 +1,4 @@
+import 'package:TodoApp_Seminar_PRM/addItem.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
@@ -19,6 +20,7 @@ class CategoryScreen extends StatelessWidget {
             size: 35,
             color: Colors.black87,
           ),
+          onPressed: () {},
         ),
         centerTitle: true,
       ),
@@ -104,7 +106,14 @@ class CategoryScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: null,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddItemScreen(),
+            ),
+          );
+        },
         child: Icon(LineAwesomeIcons.plus),
       ),
     );
