@@ -8,8 +8,12 @@ class EditItemScreen extends StatefulWidget {
 
 class _EditItemScreenState extends State<EditItemScreen> {
   // This widget is the root of your application.
+  TextEditingController _taskController = new TextEditingController();
+  TextEditingController _noteController = new TextEditingController();
+  String _note = "Add note";
   final _formKey = GlobalKey<FormState>();
   String _dateTime = "Date Time";
+  String _time = "Time";
   final List<String> items = <String>['Study', 'Game', 'Work'];
   String _selectedItem;
   @override
@@ -51,6 +55,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
               ),
               padding: EdgeInsets.only(left: 30, right: 30),
               child: new TextField(
+                controller: _taskController,
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
                 decoration: new InputDecoration(
@@ -143,6 +148,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
                                     Padding(
                                       padding: EdgeInsets.all(8.0),
                                       child: TextField(
+                                        controller: _noteController,
                                         keyboardType: TextInputType.multiline,
                                         maxLines: null,
                                         decoration: InputDecoration(
@@ -155,6 +161,12 @@ class _EditItemScreenState extends State<EditItemScreen> {
                                       child: RaisedButton(
                                         child: Text("Submit"),
                                         onPressed: () {
+                                          if (_noteController.text == "") {
+                                            _note = "Add note";
+                                          } else {
+                                            _note = _noteController.text;
+                                          }
+                                          setState(() {});
                                           Navigator.of(context).pop();
                                         },
                                       ),
@@ -179,12 +191,16 @@ class _EditItemScreenState extends State<EditItemScreen> {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(15.0),
-                        child: Text(
-                          "Add note",
-                          style: TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16.0),
+                        child: Container(
+                          width: 190,
+                          child: Text(
+                            "$_note",
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.0),
+                          ),
                         ),
                       ),
                     ],
@@ -287,8 +303,6 @@ class _EditItemScreenState extends State<EditItemScreen> {
     scaffold.showSnackBar(
       SnackBar(
         content: const Text('Edited'),
-        action: SnackBarAction(
-            label: 'UNDO', onPressed: scaffold.hideCurrentSnackBar),
       ),
     );
   }
