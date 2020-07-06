@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:TodoApp_Seminar_PRM/all.dart';
 import 'package:TodoApp_Seminar_PRM/category.dart';
 
 void main() {
@@ -16,7 +17,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: CategoryScreen(),
+      home:DetailScreen(),
+      
     );
   }
 }
