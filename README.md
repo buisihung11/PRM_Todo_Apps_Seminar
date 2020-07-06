@@ -25,3 +25,32 @@ A new Flutter project that create basic todo app with using firebase as database
 #### 4. Add FlutterFire plugins
 
 - [ ] Add needed service package of firebase to your `pubspec.yaml` file 
+
+
+
+### Issues
+
+#### 1. Add cloud_firestore
+##### Enable multidex.
+
+Open project/app/build.gradle and add the following lines.
+
+defaultConfig {
+    ...
+
+    multiDexEnabled true
+}
+and
+
+dependencies {
+    ...
+
+    implementation 'com.android.support:multidex:1.0.3'
+}
+If you have migrated to AndroidX, you'll want this instead (tip by Touré Holder):
+
+dependencies {
+    ...
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+}

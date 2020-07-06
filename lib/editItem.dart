@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
-class AddItemScreen extends StatefulWidget {
+class EditItemScreen extends StatefulWidget {
   @override
-  _AddItemScreenState createState() => _AddItemScreenState();
+  _EditItemScreenState createState() => _EditItemScreenState();
 }
 
-class _AddItemScreenState extends State<AddItemScreen> {
+class _EditItemScreenState extends State<EditItemScreen> {
   // This widget is the root of your application.
   TextEditingController _taskController = new TextEditingController();
   TextEditingController _noteController = new TextEditingController();
@@ -284,7 +284,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                       borderRadius: BorderRadius.circular(10)),
                   height: MediaQuery.of(context).size.width / 7,
                   child: const Text(
-                    'Create',
+                    'Edit',
                     style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
                   onPressed: () => _showToast(context),
@@ -302,7 +302,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     final scaffold = Scaffold.of(context);
     scaffold.showSnackBar(
       SnackBar(
-        content: const Text('Added'),
+        content: const Text('Edited'),
       ),
     );
   }
@@ -318,7 +318,7 @@ class _DateTimePickerState extends State<DateTimePicker> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AddItemScreen(),
+      home: EditItemScreen(),
     );
   }
 }
