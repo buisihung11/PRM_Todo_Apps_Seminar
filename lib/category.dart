@@ -1,10 +1,22 @@
 import 'package:TodoApp_Seminar_PRM/addItem.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/category/category_bloc.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/category/category_state.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/todo/todo_bloc.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/todo/todo_event.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/todo/todo_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import 'detail.dart';
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   const CategoryScreen({Key key}) : super(key: key);
 
+  @override
+  _CategoryScreenState createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,86 +36,88 @@ class CategoryScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Container(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  child: Container(
-                    margin: EdgeInsets.only(top: 10),
-                    child: Column(
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              margin: EdgeInsets.only(left: 20, bottom: 10),
-                              child: Text(
-                                'Categories',
-                                style: TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 28,
-                                    letterSpacing: 1,
-                                    fontWeight: FontWeight.bold),
+      body: BlocBuilder<CategoryBloc, CategoryState>(
+        builder: (context, state) {
+          if (state is CategoryLoadInProgress) {
+            return Text(
+              'Loading Category...',
+              style: TextStyle(
+                color: Colors.lightBlueAccent,
+              ),
+            );
+          } else {
+            final categories = (state as CategoryLoadSuccess).categories;
+            return Container(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        child: Container(
+                          margin: EdgeInsets.only(top: 10),
+                          child: Column(
+                            children: <Widget>[
+                              Container(
+                                margin: EdgeInsets.only(left: 20, bottom: 10),
+                                child: Text(
+                                  'Categories',
+                                  style: TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 28,
+                                      letterSpacing: 1,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
-                            ),
-                          ],
+                              categories.length == 0
+                                  ? Text('No Category')
+                                  : Expanded(
+                                      child: GridView.count(
+                                        crossAxisCount: 2,
+                                        children: categories
+                                            .map((c) => InkWell(
+                                                  onTap: () {
+                                                    Navigator.of(context)
+                                                        .push(MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          BlocProvider(
+                                                        create: (context) =>
+                                                            TodosBloc(
+                                                                categoryId:
+                                                                    c.id)
+                                                              ..add(
+                                                                LoadTodo(),
+                                                              ),
+                                                        child: DetailScreen(
+                                                          category: c,
+                                                        ),
+                                                      ),
+                                                    ));
+                                                  },
+                                                  child: CategoryItem(
+                                                    category: c.name,
+                                                    icon: LineAwesomeIcons
+                                                        .plane_departure,
+                                                    color: Colors.blueAccent,
+                                                  ),
+                                                ))
+                                            .toList(),
+                                      ),
+                                    )
+                            ],
+                          ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            CategoryItem(
-                              icon: LineAwesomeIcons.clipboard_list,
-                              category: 'All',
-                              tasks: 10,
-                              color: Colors.blue[600],
-                            ),
-                            CategoryItem(
-                              icon: LineAwesomeIcons.graduation_cap,
-                              category: 'Study',
-                              tasks: 10,
-                              color: Colors.amber,
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            CategoryItem(
-                                icon: LineAwesomeIcons.dumbbell,
-                                color: Colors.red[600],
-                                category: 'Exercise'),
-                            CategoryItem(
-                                icon: LineAwesomeIcons.briefcase,
-                                color: Colors.green[600],
-                                category: 'Work'),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            CategoryItem(
-                                icon: LineAwesomeIcons.plane_departure,
-                                color: Colors.purple[600],
-                                category: 'Travel'),
-                            CategoryItem(
-                                icon: LineAwesomeIcons.headphones,
-                                color: Colors.red[600],
-                                category: 'Music'),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
+            );
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -125,6 +139,7 @@ class CategoryItem extends StatelessWidget {
   final category;
   final int tasks;
   final Color color;
+
   const CategoryItem({
     Key key,
     this.icon,

@@ -3,14 +3,14 @@ final String tableCategories = 'categories';
 final String columnId = '_id';
 final String columnName = 'name';
 
-class Todo {
+class Category {
   int id;
   String name;
 
-  Todo();
+  Category({this.id, this.name});
 
   // convenience constructor to create a Word object
-  Todo.fromMap(Map<String, dynamic> map) {
+  Category.fromMap(Map<String, dynamic> map) {
     id = map[columnId];
     name = map[columnName];
   }
