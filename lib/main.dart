@@ -1,17 +1,23 @@
 import 'package:TodoApp_Seminar_PRM/blocs/category/category_bloc.dart';
 import 'package:TodoApp_Seminar_PRM/blocs/category/category_event.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/todo/index.dart';
 import 'package:flutter/material.dart';
 import 'package:TodoApp_Seminar_PRM/category.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    BlocProvider(
-      create: (BuildContext context) => CategoryBloc()..add(LoadCategory()),
-      child: MyApp(),
-    ),
-  );
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider(
+        create: (BuildContext context) => CategoryBloc()..add(LoadCategory()),
+      ),
+      BlocProvider(
+        create: (BuildContext context) => TodosBloc(),
+      ),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

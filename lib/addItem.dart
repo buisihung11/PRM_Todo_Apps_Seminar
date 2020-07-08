@@ -1,5 +1,9 @@
+import 'package:TodoApp_Seminar_PRM/blocs/category/category_bloc.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/category/category_state.dart';
+import 'package:TodoApp_Seminar_PRM/blocs/todo/index.dart';
+import 'package:TodoApp_Seminar_PRM/database/todoModel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddItemScreen extends StatefulWidget {
   @override
@@ -14,8 +18,15 @@ class _AddItemScreenState extends State<AddItemScreen> {
   final _formKey = GlobalKey<FormState>();
   String _dateTime = "Date Time";
   String _time = "Time";
-  final List<String> items = <String>['Study', 'Game', 'Work'];
-  String _selectedItem;
+
+  // final List<String> items = <String>['Study', 'Game', 'Work'];
+  int categoryId;
+
+  _addTodo(BuildContext context) {
+    BlocProvider.of<TodosBloc>(context).add(
+        TodoAdded(Todo(content: _taskController.text, categoryId: categoryId)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,274 +46,143 @@ class _AddItemScreenState extends State<AddItemScreen> {
         onTap: () {
           FocusScope.of(context).requestFocus(new FocusNode());
         },
-        child: SingleChildScrollView(
-          child: Column(children: <Widget>[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                padding:
-                    EdgeInsets.only(top: 15, bottom: 5, right: 20, left: 20),
-                child: Text(
-                  'What are you planning?',
-                  style: TextStyle(fontSize: 20, color: Colors.grey),
-                ),
-              ),
-            ),
-            Container(
-              constraints: BoxConstraints(
-                maxHeight: 250.0,
-                minHeight: 250.0,
-              ),
-              padding: EdgeInsets.only(left: 30, right: 30),
-              child: new TextField(
-                controller: _taskController,
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                decoration: new InputDecoration(
-                  border: InputBorder.none,
-                ),
-                style: TextStyle(fontSize: 26),
-              ),
-            ),
-            Divider(
-              height: 2,
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 60, left: 60),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
-                elevation: 4.0,
-                onPressed: () {
-                  DatePicker.showDateTimePicker(context,
-                      theme: DatePickerTheme(
-                        containerHeight: 210.0,
+        child: BlocBuilder<CategoryBloc, CategoryState>(
+          builder: (context, state) {
+            if (state is CategoryLoadSuccess) {
+              final items = state.categories;
+              print(items);
+              return SingleChildScrollView(
+                child: Column(children: <Widget>[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: EdgeInsets.only(
+                          top: 15, bottom: 5, right: 20, left: 20),
+                      child: Text(
+                        'What are you planning?',
+                        style: TextStyle(fontSize: 20, color: Colors.grey),
                       ),
-                      showTitleActions: true,
-                      minTime: DateTime(2000, 1, 1),
-                      maxTime: DateTime(2022, 12, 31), onConfirm: (date) {
-                    print('confirm $date');
-                    _dateTime =
-                        '${date.year}/${date.month}/${date.day} - ${date.hour} : ${date.minute}';
-                    setState(() {});
-                  }, currentTime: DateTime.now(), locale: LocaleType.en);
-                },
-                child: Container(
-                  alignment: Alignment.center,
-                  height: 50.0,
-                  child: Row(
-                    children: <Widget>[
-                      Container(
+                    ),
+                  ),
+                  Container(
+                    constraints: BoxConstraints(
+                      maxHeight: 250.0,
+                      minHeight: 250.0,
+                    ),
+                    padding: EdgeInsets.only(left: 30, right: 30),
+                    child: new TextField(
+                      controller: _taskController,
+                      decoration: new InputDecoration(
+                        border: InputBorder.none,
+                      ),
+                      style: TextStyle(fontSize: 26),
+                    ),
+                  ),
+                  Divider(
+                    height: 2,
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(right: 60, left: 60, bottom: 5),
+                    child: RaisedButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
+                      elevation: 4.0,
+                      onPressed: () {},
+                      child: Container(
+                        alignment: Alignment.center,
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Icon(
-                              Icons.date_range,
-                              size: 18.0,
-                              color: Colors.black,
+                            Row(
+                              children: <Widget>[
+                                Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.dehaze,
+                                        size: 18.0,
+                                        color: Colors.grey,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(15.0),
+                                        child: Text(
+                                          "Category",
+                                          style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 18.0),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: Text(
-                                " $_dateTime",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18.0),
-                              ),
+                            DropdownButton<String>(
+                              hint: Text('Choose'),
+                              value: categoryId != null
+                                  ? items
+                                      .firstWhere(
+                                          (element) => element.id == categoryId,
+                                          orElse: () => null)
+                                      .id
+                                      .toString()
+                                  : null,
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 16),
+                              onChanged: (String newValue) {
+                                setState(() {
+                                  categoryId = int.parse(newValue);
+                                });
+                              },
+                              items: items.map((category) {
+                                return DropdownMenuItem<String>(
+                                  child: Text('${category.name}'),
+                                  value: category.id.toString(),
+                                );
+                              }).toList(),
                             ),
                           ],
                         ),
-                      )
-                    ],
+                      ),
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 60, left: 60),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
-                elevation: 4.0,
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          content: Stack(
-                            overflow: Overflow.visible,
-                            children: <Widget>[
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Text("Add your note"),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: TextField(
-                                        controller: _noteController,
-                                        keyboardType: TextInputType.multiline,
-                                        maxLines: null,
-                                        decoration: InputDecoration(
-                                            border: InputBorder.none,
-                                            hintText: 'Enter a your note'),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: RaisedButton(
-                                        child: Text("Submit"),
-                                        onPressed: () {
-                                          if (_noteController.text == "") {
-                                            _note = "Add note";
-                                          } else {
-                                            _note = _noteController.text;
-                                          }
-                                          setState(() {});
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      });
-                },
-                child: Container(
-                  alignment: Alignment.center,
-                  height: 50.0,
-                  child: Row(
-                    children: <Widget>[
-                      Icon(
-                        Icons.note,
-                        size: 18.0,
-                        color: Colors.grey,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(15.0),
-                        child: Container(
-                          width: 190,
-                          child: Text(
-                            "$_note",
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16.0),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 60, left: 60, bottom: 5),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
-                elevation: 4.0,
-                onPressed: () {},
-                child: Container(
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            child: Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.dehaze,
-                                  size: 18.0,
-                                  color: Colors.grey,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(15.0),
-                                  child: Text(
-                                    "Category",
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 18.0),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                      DropdownButton<String>(
-                        hint: Text('Choose'),
-                        value: _selectedItem,
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
-                        onChanged: (String newValue) {
-                          setState(() {
-                            _selectedItem = newValue;
-                          });
-                        },
-                        items: items.map((String item) {
-                          return DropdownMenuItem<String>(
-                            child: Text('$item'),
-                            value: item,
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
-                ),
-                color: Colors.white,
-              ),
-            ),
-          ]),
+                ]),
+              );
+            } else {
+              return Center(child: Text("Loading Category"));
+            }
+          },
         ),
       ),
-      bottomNavigationBar: Builder(
-        builder: (context) => Row(
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                padding:
-                    EdgeInsets.only(right: 20, left: 20, bottom: 10, top: 10),
-                child: MaterialButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  height: MediaQuery.of(context).size.width / 7,
-                  child: const Text(
-                    'Create',
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  onPressed: () => _showToast(context),
-                  color: Colors.blue,
-                ),
-              ),
-            ),
-          ],
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(right: 20, left: 20, bottom: 10, top: 10),
+        width: MediaQuery.of(context).size.width,
+        child: MaterialButton(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          height: MediaQuery.of(context).size.width / 7,
+          child: const Text(
+            'Create',
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () {
+            BlocProvider.of<TodosBloc>(context).add(TodoAdded(Todo(
+              content: _taskController.text,
+              categoryId: categoryId,
+              hasDone: false,
+            )));
+            // _addTodo(context);
+          },
+          color: Colors.blue,
         ),
-      ),
-    );
-  }
-
-  void _showToast(BuildContext context) {
-    final scaffold = Scaffold.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-        content: const Text('Added'),
       ),
     );
   }

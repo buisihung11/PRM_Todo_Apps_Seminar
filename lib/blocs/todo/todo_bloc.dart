@@ -42,7 +42,10 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
       final List<Todo> updatedTodos =
           List.from((state as TodosLoadSuccess).todos)..add(addedTodo);
       yield TodosLoadSuccess(updatedTodos);
-      _saveTodos(updatedTodos);
+    } else {
+      final addedTodo = await db.addTodo(event.todo);
+      // TODO yield add success for notify
+
     }
   }
 
@@ -67,12 +70,14 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
 
   Stream<TodosState> _mapTodoDeletedToState(TodoDeleted event) async* {
     if (state is TodosLoadSuccess) {
-      final updatedTodos = (state as TodosLoadSuccess)
-          .todos
-          .where((todo) => todo.id != event.todo.id)
-          .toList();
-      yield TodosLoadSuccess(updatedTodos);
-      _saveTodos(updatedTodos);
+      final result = await db.delete(event.todo.id);
+      if (result != 0) {
+        final updatedTodos = (state as TodosLoadSuccess)
+            .todos
+            .where((todo) => todo.id != event.todo.id)
+            .toList();
+        yield TodosLoadSuccess(updatedTodos);
+      }
     }
   }
 

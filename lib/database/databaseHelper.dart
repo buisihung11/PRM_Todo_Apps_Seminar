@@ -106,6 +106,11 @@ class DatabaseHelper {
     return id;
   }
 
+  Future<int> delete(int id) async {
+    Database db = await database;
+    return db.delete(tableTodos, where: '_id = ?', whereArgs: [id]);
+  }
+
   Future<List<Todo>> getAllTodos(int categoryId) async {
     final db = await database;
     List<Map<String, dynamic>> results = await db.query(

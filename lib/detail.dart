@@ -89,7 +89,9 @@ class _DetailScreenState extends State<DetailScreen> {
           if (state is TodosLoadInProgress) {
             return CircularProgressIndicator();
           } else {
-            return TaskList(todos: (state as TodosLoadSuccess).todos);
+            return SingleChildScrollView(
+              child: TaskList(todos: (state as TodosLoadSuccess).todos),
+            );
           }
         },
       ),
@@ -118,10 +120,6 @@ class TaskList extends StatefulWidget {
 class _TaskListState extends State<TaskList> {
   final TextStyle _textStyle =
       TextStyle(fontFamily: 'Rubik', fontSize: 16.0, color: Colors.grey[800]);
-
-  IconData callMax = Icons.crop_square;
-  IconData piano = Icons.crop_square;
-  IconData spain = Icons.crop_square;
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +164,7 @@ class _TaskListState extends State<TaskList> {
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white)),
                         SizedBox(height: 10.0),
-                        Text('23 tasks',
+                        Text('${widget.todos.length} tasks',
                             style:
                                 TextStyle(color: Colors.blueGrey, fontSize: 20))
                       ],
@@ -191,16 +189,41 @@ class _TaskListState extends State<TaskList> {
                           offset: Offset(0.0, -10.0),
                           blurRadius: 8.0)
                     ]),
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: widget.todos.length == 0
-                      ? Text("No todo in this category")
-                      : Column(
-                          children: widget.todos
-                              .map((todo) => TodoItem(
-                                    todo: todo,
-                                  ))
-                              .toList()),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.all(25),
+                    child: widget.todos.length == 0
+                        ? Center(child: Text("No todo in this category"))
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                'Current:',
+                                style: TextStyle(
+                                    fontSize: 25, fontWeight: FontWeight.bold),
+                              ),
+                              Column(
+                                  children: widget.todos
+                                      .where((element) => !element.hasDone)
+                                      .map((todo) => TodoItem(
+                                            todo: todo,
+                                          ))
+                                      .toList()),
+                              Text(
+                                'Doned:',
+                                style: TextStyle(
+                                    fontSize: 25, fontWeight: FontWeight.bold),
+                              ),
+                              Column(
+                                  children: widget.todos
+                                      .where((element) => element.hasDone)
+                                      .map((todo) => TodoItem(
+                                            todo: todo,
+                                          ))
+                                      .toList()),
+                            ],
+                          ),
+                  ),
                 ))
           ],
         ),
@@ -218,11 +241,13 @@ class TodoItem extends StatelessWidget {
   const TodoItem({Key key, @required this.todo}) : super(key: key);
 
   _updateTodo(bool hasDone, BuildContext context) async {
-    DatabaseHelper db = DatabaseHelper.db;
-    todo.hasDone = hasDone;
-    await db.updateTodo(todo);
-    final snackBar = SnackBar(content: Text('Updated'));
-    Scaffold.of(context).showSnackBar(snackBar);
+    BlocProvider.of<TodosBloc>(context).add(
+      TodoUpdated(todo.copyWith(hasDone: !todo.hasDone)),
+    );
+  }
+
+  _deleteTodo(BuildContext context) {
+    BlocProvider.of<TodosBloc>(context).add(TodoDeleted(todo));
   }
 
   @override
@@ -233,18 +258,32 @@ class TodoItem extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: CheckboxListTile(
-              title: Text(todo.content),
+              controlAffinity: ListTileControlAffinity.leading,
+              title: Text(
+                todo.content,
+                style: todo.hasDone
+                    ? _textStyle.copyWith(
+                        // fontWeight: FontWeight.bold,
+                        color: Colors.blue[200],
+                        decoration: TextDecoration.lineThrough)
+                    : _textStyle,
+              ),
               value: todo.hasDone,
               onChanged: (bool value) {
-                BlocProvider.of<TodosBloc>(context).add(
-                  TodoUpdated(
-                    todo.copyWith(hasDone: !todo.hasDone),
-                  ),
-                );
+                _updateTodo(value, context);
               },
 //              secondary: const Icon(Icons.hourglass_empty),
             ),
           ),
+          IconButton(
+              icon: Icon(
+                Icons.delete,
+                color: Colors.redAccent,
+              ),
+              onPressed: () {
+                print('Delete ${todo.id}');
+                _deleteTodo(context);
+              })
         ],
       ),
     );
